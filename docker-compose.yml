@@ -9,10 +9,16 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - RUN_MODE=${RUN_MODE:-scheduler}
     networks:
       - igniten_network_global
     volumes:
       - ./logs:/var/log/igniten
+    # Puerto solo necesario en RUN_MODE=api (testing/desarrollo)
+    # En producción (RUN_MODE=scheduler) este puerto no se usa
+    ports:
+      - "${API_PORT:-8080}:${API_PORT:-8080}"
 
 networks:
   igniten_network_global:
