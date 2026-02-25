@@ -155,6 +155,38 @@ class Settings(BaseSettings):
     mock_email: bool = False
     mock_databases: bool = False
 
+    # ========== AGENT CLIENT ==========
+    # URL del contenedor 'agent' en igniten_network_global
+    agent_base_url: str = "http://agent:8000"
+    # user_id enviado en cada request al agente
+    agent_user_id: str = "unknown-unknowns-agent"
+    # Timeout en segundos por request (el agente puede tardar en analizar)
+    agent_timeout_seconds: int = 120
+    # Reintentos ante errores temporales (429, 502, 503, timeouts)
+    agent_max_retries: int = 3
+    # Segundos base entre reintentos (escala exponencialmente: 5s, 10s, 20s)
+    agent_retry_delay_seconds: float = 5.0
+
+    # ========== CRON SCHEDULER ==========
+    # Timezone para el scheduler (Colombia = UTC-5)
+    cron_timezone: str = "America/Bogota"
+    # Día de la semana para el run semanal
+    cron_day_of_week: str = "thursday"
+    # Hora del run (hora local según cron_timezone)
+    cron_hour: int = 11
+    # Minuto del run
+    cron_minute: int = 0
+
+    # ========== PIPELINE CONFIGURATION ==========
+    # Máximo total de hipótesis por cliente por run
+    max_hypotheses_per_client: int = 10
+    # Hipótesis generadas desde known_pain_points
+    max_pain_point_hypotheses: int = 5
+    # Hipótesis generadas desde strategic_priorities
+    max_priority_hypotheses: int = 5
+    # Tipo de run a registrar en unknown_unknowns_runs
+    pipeline_run_type: str = "weekly"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

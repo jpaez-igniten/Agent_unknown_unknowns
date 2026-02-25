@@ -68,3 +68,6 @@ python-multipart==0.0.6
 # Security
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
+
+# Scheduler (cron jobs con timezone support)
+APScheduler==3.10.4

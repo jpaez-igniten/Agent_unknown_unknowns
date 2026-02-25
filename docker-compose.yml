@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  unknown-unknowns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unknown-unknowns
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - igniten_network_global
+    volumes:
+      - ./logs:/var/log/igniten
+
+networks:
+  igniten_network_global:
+    external: true
+    name: igniten_network_global

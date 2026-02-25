@@ -17,3 +17,14 @@ venv/
 
 # OS
 .DS_Store
+
+# Logs (montados como volumen en Docker)
+logs/
+*.log
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+dist/
+*.egg-info/
