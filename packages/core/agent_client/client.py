@@ -219,6 +219,10 @@ class AgentClient:
 
         Soporta múltiples formatos de respuesta que distintos agentes pueden retornar.
         """
+        # Formato 0: Igniten agent {"status": "success", "ai_response": "..."}
+        if "ai_response" in data and isinstance(data["ai_response"], str):
+            return data["ai_response"]
+
         # Formato 1: {"response": "..."}
         if "response" in data and isinstance(data["response"], str):
             return data["response"]
