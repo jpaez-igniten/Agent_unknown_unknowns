@@ -233,10 +233,10 @@ class BusinessProfile(BaseModel):
         return v
 
     @validator('profile_completeness', 'confidence_score')
-    def validate_scores(cls, v, field):
+    def validate_scores(cls, v):
         """Valida que los scores estén entre 0 y 1"""
         if not 0.0 <= v <= 1.0:
-            raise ValueError(f"{field.name} debe estar entre 0.0 y 1.0")
+            raise ValueError("El score debe estar entre 0.0 y 1.0")
         return v
 
     @root_validator(skip_on_failure=True)
