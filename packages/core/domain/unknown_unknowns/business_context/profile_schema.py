@@ -239,7 +239,7 @@ class BusinessProfile(BaseModel):
             raise ValueError(f"{field.name} debe estar entre 0.0 y 1.0")
         return v
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def update_last_updated(cls, values):
         """Actualiza last_updated al modificar el perfil"""
         if 'last_updated' not in values or values.get('last_updated') is None:
