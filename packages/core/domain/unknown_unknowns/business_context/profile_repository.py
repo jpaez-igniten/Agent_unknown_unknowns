@@ -15,8 +15,16 @@ from typing import List, Optional, Dict, Any
 from uuid import uuid4
 
 import asyncpg
-from chromadb import Client as ChromaClient
-from chromadb.config import Settings
+
+# ChromaDB es opcional — solo se importa si ENABLE_CHROMADB=true
+try:
+    from chromadb import Client as ChromaClient
+    from chromadb.config import Settings as ChromaSettings
+    _CHROMADB_AVAILABLE = True
+except ImportError:
+    ChromaClient = None  # type: ignore
+    ChromaSettings = None  # type: ignore
+    _CHROMADB_AVAILABLE = False
 
 from .profile_schema import (
     BusinessProfile,
