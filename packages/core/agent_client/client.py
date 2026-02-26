@@ -65,6 +65,7 @@ class AgentClient:
         self,
         base_url: str,
         user_id: str,
+        api_key: Optional[str] = None,
         timeout: float = 120.0,
         max_retries: int = 3,
         retry_delay: float = 5.0
@@ -73,6 +74,7 @@ class AgentClient:
         Args:
             base_url: URL base del agente (ej: http://agent:8000)
             user_id: user_id a enviar en cada request
+            api_key: Valor para el header X-Agent-API-Key (AGENT_API_KEY en el .env del agente)
             timeout: Timeout en segundos para la respuesta (el agente puede tardar)
             max_retries: Número de reintentos ante errores retryables
             retry_delay: Segundos base entre reintentos (escala exponencialmente)
@@ -83,6 +85,13 @@ class AgentClient:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        if api_key:
+            headers["X-Agent-API-Key"] = api_key
+
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(
                 connect=10.0,
@@ -90,15 +99,13 @@ class AgentClient:
                 write=30.0,
                 pool=5.0
             ),
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
+            headers=headers
         )
 
         logger.info(
             f"AgentClient initialized | URL: {self.base_url} | "
-            f"user_id: {self.user_id} | timeout: {timeout}s"
+            f"user_id: {self.user_id} | timeout: {timeout}s | "
+            f"api_key: {'set' if api_key else 'not set'}"
         )
 
     async def chat(self, message_text: str, conversation_id: str) -> AgentResponse:

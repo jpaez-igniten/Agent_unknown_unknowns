@@ -158,8 +158,10 @@ class Settings(BaseSettings):
     # ========== AGENT CLIENT ==========
     # URL del contenedor 'agent' en igniten_network_global
     agent_base_url: str = "http://agent:8000"
-    # user_id enviado en cada request al agente
+    # user_id enviado en cada request al agente (debe existir en auth.users del agente)
     agent_user_id: str = "unknown-unknowns-agent"
+    # API key para el header X-Agent-API-Key (AGENT_API_KEY del contenedor agente)
+    agent_api_key: Optional[str] = None
     # Timeout en segundos por request (el agente puede tardar en analizar)
     agent_timeout_seconds: int = 120
     # Reintentos ante errores temporales (429, 502, 503, timeouts)

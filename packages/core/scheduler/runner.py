@@ -445,6 +445,7 @@ class PipelineRunner:
         self.agent_client = AgentClient(
             base_url=self.settings.agent_base_url,
             user_id=self.settings.agent_user_id,
+            api_key=self.settings.agent_api_key,
             timeout=float(self.settings.agent_timeout_seconds),
             max_retries=self.settings.agent_max_retries,
             retry_delay=self.settings.agent_retry_delay_seconds
