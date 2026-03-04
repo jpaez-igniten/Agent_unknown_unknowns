@@ -174,6 +174,34 @@ class HypothesisTemplate:
 
         return hypotheses
 
+    @staticmethod
+    def generate_targeted(targeted_questions: List[str]) -> List[Dict[str, Any]]:
+        """
+        Genera hipótesis desde preguntas específicas (deep dives).
+
+        Se usa cuando se quiere investigar algo concreto que surgió de un run anterior,
+        en lugar de usar las plantillas genéricas de pain_points/priorities.
+
+        Args:
+            targeted_questions: Lista de preguntas/hipótesis específicas a enviar al agente
+
+        Returns:
+            Lista de hipótesis con el mismo formato que generate()
+        """
+        hypotheses = []
+        for i, question in enumerate(targeted_questions):
+            hypotheses.append({
+                "hypothesis_id": f"targeted_{i}_{uuid.uuid4().hex[:8]}",
+                "hypothesis_text": question,
+                "business_rationale": f"Deep dive específico #{i + 1} — seguimiento de run anterior",
+                "pain_point_addressed": None,
+                "strategic_priority": None,
+                "source": "targeted"
+            })
+
+        logger.info(f"Generated {len(hypotheses)} targeted hypotheses")
+        return hypotheses
+
 
 # ============================================================================
 # RUN REPOSITORY
