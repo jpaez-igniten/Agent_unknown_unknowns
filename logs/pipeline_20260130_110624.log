@@ -1,0 +1,72 @@
+[2026-01-30 11:06:24] DEBUG    - asyncio - Using selector: KqueueSelector
+[2026-01-30 11:06:24] INFO     - __main__ - Inicializando componentes...
+[2026-01-30 11:06:24] INFO     - __main__ - ✅ LLM inicializado (gemini-3-flash-preview)
+[2026-01-30 11:06:24] INFO     - __main__ - Conectando a Postgres: localhost:5432/igniten_core
+[2026-01-30 11:06:24] INFO     - __main__ - ✅ Conectado a Postgres exitosamente
+[2026-01-30 11:06:24] INFO     - __main__ - Inicializando repositories y componentes...
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.business_context.profile_builder - OrthodoxyDetector initialized
+[2026-01-30 11:06:24] INFO     - __main__ - ✅ Todos los componentes inicializados
+[2026-01-30 11:06:24] INFO     - __main__ - Cargando perfil para cliente: demo_seguros_001
+[2026-01-30 11:06:24] INFO     - __main__ - Perfil cargado: Seguros Carga S.A.
+[2026-01-30 11:06:24] INFO     - __main__ - Iniciando pipeline completo de generación y validación...
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.orchestrator - Starting discovery pipeline for client demo_seguros_001
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] STEP 1: Loading BusinessProfile
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] Profile loaded: Seguros Carga S.A., completeness=90.00%
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] STEP 2: Generating hypotheses (max: 10)
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating hypotheses for client demo_seguros_001 (run: run_20260130_110624_41a2ff1d)
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating knowledge-driven hypotheses (max: 5)
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating anomaly-driven hypotheses (max: 3)
+[2026-01-30 11:06:24] INFO     - google_genai.models - AFC is enabled with max remote calls: 10.
+[2026-01-30 11:06:24] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.generator - Detecting anomalies for client demo_seguros_001
+[2026-01-30 11:06:24] DEBUG    - httpcore.connection - connect_tcp.started host='generativelanguage.googleapis.com' port=443 local_address=None timeout=None socket_options=None
+[2026-01-30 11:06:24] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.generator - Detected 0 anomalies
+[2026-01-30 11:06:24] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - No anomalies detected, skipping anomaly-driven generation
+[2026-01-30 11:06:24] DEBUG    - httpcore.connection - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c7cf590>
+[2026-01-30 11:06:24] DEBUG    - httpcore.connection - start_tls.started ssl_context=<ssl.SSLContext object at 0x10abc6f90> server_hostname='generativelanguage.googleapis.com' timeout=None
+[2026-01-30 11:06:24] DEBUG    - httpcore.connection - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10c700590>
+[2026-01-30 11:06:24] DEBUG    - httpcore.http11 - send_request_headers.started request=<Request [b'POST']>
+[2026-01-30 11:06:24] DEBUG    - httpcore.http11 - send_request_headers.complete
+[2026-01-30 11:06:24] DEBUG    - httpcore.http11 - send_request_body.started request=<Request [b'POST']>
+[2026-01-30 11:06:24] DEBUG    - httpcore.http11 - send_request_body.complete
+[2026-01-30 11:06:24] DEBUG    - httpcore.http11 - receive_response_headers.started request=<Request [b'POST']>
+[2026-01-30 11:06:48] DEBUG    - httpcore.http11 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=UTF-8'), (b'Vary', b'Origin'), (b'Vary', b'X-Origin'), (b'Vary', b'Referer'), (b'Content-Encoding', b'gzip'), (b'Date', b'Fri, 30 Jan 2026 16:06:48 GMT'), (b'Server', b'scaffolding on HTTPServer2'), (b'X-XSS-Protection', b'0'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-Content-Type-Options', b'nosniff'), (b'Server-Timing', b'gfet4t7; dur=23705'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'), (b'Transfer-Encoding', b'chunked')])
+[2026-01-30 11:06:48] DEBUG    - httpcore.http11 - receive_response_body.started request=<Request [b'POST']>
+[2026-01-30 11:06:48] DEBUG    - httpcore.http11 - receive_response_body.complete
+[2026-01-30 11:06:48] DEBUG    - httpcore.http11 - response_closed.started
+[2026-01-30 11:06:48] DEBUG    - httpcore.http11 - response_closed.complete
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generated 5 knowledge-driven hypotheses
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generated 5 raw hypotheses
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Calculating delivery scores for 5 hypotheses
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Filtered to 5 deliverable hypotheses (score >=70)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Final portfolio: 5 hypotheses (quick_win: 2, medium_term: 2, strategic_bet: 1)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] Generated 5 hypotheses
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] STEP 3: Validating technical feasibility
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Validating feasibility for hypothesis: El 15% de los agentes genera el 70% de los contrat...
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Found 5 available tables for client demo_seguros_001
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Using data_sources_used from hypothesis: ['agent_performance_table', 'commission_payout_data', 'contract_margin_analysis']
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Feasibility validation complete: score=0.44, is_feasible=False, missing_tables=3
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.orchestrator - Hypothesis hyp_cd675abaca83 filtered out (feasible: False, score: 0.44)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Validating feasibility for hypothesis: El 20% de los clientes con mayores descuentos (>15...
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Using data_sources_used from hypothesis: ['sales_discounts_table', 'claims_history', 'customer_profitability_report']
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Feasibility validation complete: score=0.44, is_feasible=False, missing_tables=3
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.orchestrator - Hypothesis hyp_1469f50e9815 filtered out (feasible: False, score: 0.44)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Validating feasibility for hypothesis: Los clientes del segmento 'Long Tail' (80% inferio...
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Using data_sources_used from hypothesis: ['crm_support_logs', 'operational_cost_allocation', 'revenue_by_customer']
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Feasibility validation complete: score=0.44, is_feasible=False, missing_tables=3
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.orchestrator - Hypothesis hyp_78ab11c8c3a4 filtered out (feasible: False, score: 0.44)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Validating feasibility for hypothesis: Los clientes Top 20 que no han recibido una audito...
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Using data_sources_used from hypothesis: ['customer_interaction_logs', 'churn_history', 'claims_severity_data']
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Feasibility validation complete: score=0.44, is_feasible=False, missing_tables=3
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.orchestrator - Hypothesis hyp_2c276cddc639 filtered out (feasible: False, score: 0.44)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Validating feasibility for hypothesis: Implementar un recargo por riesgo dinámico (Dynami...
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Using data_sources_used from hypothesis: ['claims_geo_data', 'pricing_engine_logs', 'market_benchmark_rates']
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.hypothesis.feasibility_validator - Feasibility validation complete: score=0.44, is_feasible=False, missing_tables=3
+[2026-01-30 11:06:48] DEBUG    - packages.core.domain.unknown_unknowns.orchestrator - Hypothesis hyp_c594f6a15e54 filtered out (feasible: False, score: 0.44)
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_110624_41a2ff1d] Feasibility validation complete: 0/5 feasible
+[2026-01-30 11:06:48] WARNING  - packages.core.domain.unknown_unknowns.orchestrator - No feasible hypotheses after validation
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.orchestrator - Saving run results for run_20260130_110624_41a2ff1d
+[2026-01-30 11:06:48] INFO     - packages.core.domain.unknown_unknowns.orchestrator - Run results prepared for run_20260130_110624_41a2ff1d
+[2026-01-30 11:06:48] INFO     - __main__ - Resultados guardados en: results/run_20260130_110648_demo_seguros_001.json
+[2026-01-30 11:06:48] INFO     - __main__ - Conexión a Postgres cerrada
+[2026-01-30 11:06:48] DEBUG    - httpcore.connection - close.started
+[2026-01-30 11:06:48] DEBUG    - httpcore.connection - close.complete

@@ -1,0 +1,11 @@
+{
+  "run_id": "run_20260130_112821_fd2c99c2",
+  "client_id": "demo_seguros_001",
+  "status": "completed",
+  "reason": "No hypotheses generated",
+  "total_hypotheses_generated": 0,
+  "feasible_hypotheses": 0,
+  "validated_hypotheses": 0,
+  "deliverable_insights": 0,
+  "insights": []
+}

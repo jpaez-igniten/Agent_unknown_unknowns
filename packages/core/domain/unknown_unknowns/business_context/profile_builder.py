@@ -3,8 +3,12 @@ Business Profile Builder
 
 Construye y enriquece BusinessProfile desde múltiples fuentes:
 - FASE 1: Onboarding manual (cuestionario)
+- FASE 1: Detección automática de ortodoxos (creencias no cuestionadas)
 - FASE 2+: Análisis automático del schema
 - FASE 2+: Learning continuo de conversaciones
+
+CRÍTICO: La detección de ortodoxos es NUESTRA responsabilidad, no del cliente.
+Los ortodoxos son invisibles para quien está dentro del sistema.
 
 Patrón Builder para construir objetos complejos paso a paso.
 """
@@ -20,9 +24,11 @@ from .profile_schema import (
     KPI,
     BusinessProcess,
     Initiative,
-    SizeMetrics
+    SizeMetrics,
+    Orthodoxy
 )
 from .profile_repository import BusinessProfileRepository
+from .orthodoxy_detector import OrthodoxyDetector
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +43,29 @@ class BusinessProfileBuilder:
     - update_from_conversations
     """
 
-    def __init__(self, repository: BusinessProfileRepository):
+    def __init__(
+        self,
+        repository: BusinessProfileRepository,
+        db_connection=None,
+        llm=None
+    ):
         """
         Args:
             repository: BusinessProfileRepository para persistir perfiles
+            db_connection: Conexión asyncpg (opcional, requerido para orthodoxy detection)
+            llm: LLM para análisis (opcional, requerido para orthodoxy detection)
         """
         self.repository = repository
+        self.db = db_connection
+        self.llm = llm
+
+        # Initialize OrthodoxyDetector if dependencies are available
+        if db_connection and llm:
+            self.orthodoxy_detector = OrthodoxyDetector(db_connection, llm)
+            logger.info("OrthodoxyDetector initialized")
+        else:
+            self.orthodoxy_detector = None
+            logger.info("OrthodoxyDetector not initialized (missing db_connection or llm)")
 
     # ========== FASE 1: ONBOARDING MANUAL ==========
 
@@ -162,7 +185,43 @@ class BusinessProfileBuilder:
                 last_updated=datetime.now()
             )
 
-            # Calcular completeness
+            # Detect orthodoxies (if detector is available)
+            # CRITICAL: This is OUR responsibility, not the client's
+            # Orthodoxies are invisible to those inside the system
+            if self.orthodoxy_detector:
+                try:
+                    logger.info(f"Detecting orthodoxies for {client_id}...")
+                    detected_orthodoxies = await self.orthodoxy_detector.detect_orthodoxies(client_id)
+
+                    # Convert to Orthodoxy models and add to profile
+                    for orth_data in detected_orthodoxies:
+                        orthodoxy = Orthodoxy(
+                            orthodoxy=orth_data['orthodoxy'],
+                            discovered_by=orth_data['discovered_by'],
+                            confidence=orth_data['confidence'],
+                            potential_for_disruption=orth_data['potential_for_disruption'],
+                            evidence=orth_data.get('evidence', ''),
+                            detected_at=(
+                                datetime.fromisoformat(orth_data['detected_at'])
+                                if isinstance(orth_data['detected_at'], str)
+                                else orth_data['detected_at']
+                            ),
+                            quote=orth_data.get('quote')
+                        )
+                        profile.add_orthodoxy(orthodoxy)
+
+                    logger.info(
+                        f"Detected {len(detected_orthodoxies)} orthodoxies for {client_id} "
+                        f"({len(profile.get_high_disruption_orthodoxies())} high-disruption)"
+                    )
+
+                except Exception as e:
+                    logger.warning(f"Could not detect orthodoxies for {client_id}: {e}")
+                    # Continue without orthodoxies - not critical to fail the whole profile
+            else:
+                logger.debug("Orthodoxy detection skipped (detector not initialized)")
+
+            # Calcular completeness (includes orthodoxies now)
             profile.profile_completeness = profile.calculate_completeness()
 
             # Inferir confidence_score basado en completeness

@@ -13,7 +13,7 @@ Ventana de Johari aplicada a datos empresariales:
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class StrategicPriority(BaseModel):
@@ -79,6 +79,37 @@ class RejectedInsight(BaseModel):
     hypothesis_text: str = Field(..., description="Hipótesis original")
     rejection_date: datetime = Field(..., description="Fecha de rechazo")
     reason: str = Field(..., description="Razón del rechazo")
+
+
+class Orthodoxy(BaseModel):
+    """
+    Creencia no cuestionada (ortodoxo) detectada automáticamente.
+
+    Los ortodoxos son creencias que:
+    1. Se toman como verdad absoluta sin cuestionar
+    2. Limitan posibilidades ("no podemos hacer X porque...")
+    3. Podrían ser desafiados con buenos resultados
+
+    ES NUESTRA RESPONSABILIDAD detectarlos, no del cliente.
+    """
+    orthodoxy: str = Field(..., description="Descripción de la creencia no cuestionada")
+    discovered_by: str = Field(
+        ...,
+        description="Método de detección: 'pattern_analysis', 'client_mentioned', 'llm_inferred'"
+    )
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confianza en que esto es un ortodoxo (0.0-1.0)"
+    )
+    potential_for_disruption: str = Field(
+        ...,
+        description="Potencial de disrupción si se desafía: 'high', 'medium', 'low'"
+    )
+    evidence: str = Field(..., description="Evidencia que soporta la detección")
+    detected_at: datetime = Field(default_factory=datetime.now, description="Cuándo se detectó")
+    quote: Optional[str] = Field(None, description="Cita textual si viene de conversación")
 
 
 class BusinessProfile(BaseModel):
@@ -179,6 +210,22 @@ class BusinessProfile(BaseModel):
         description="Contexto competitivo del mercado"
     )
 
+    # ========== INDUSTRY ORTHODOXIES (CRÍTICO - ES NUESTRA RESPONSABILIDAD DETECTARLOS) ==========
+    industry_orthodoxies: List[Orthodoxy] = Field(
+        default_factory=list,
+        description="""
+        Creencias no cuestionadas de la industria o empresa.
+
+        Los ortodoxos son invisibles para quien está dentro del sistema.
+        ES NUESTRA RESPONSABILIDAD detectarlos mediante análisis de:
+        - Patrones en los datos (si SIEMPRE hacen X, eso es un ortodoxo)
+        - Conversaciones del cliente ('Siempre...', 'Nunca...', 'Así se hace aquí...')
+        - Comparación con industry benchmarks
+
+        Para cada ortodoxo detectado, se debe generar al menos UNA hipótesis que lo desafíe.
+        """
+    )
+
     # ========== METADATA ==========
     profile_completeness: float = Field(
         default=0.0,
@@ -219,12 +266,8 @@ class BusinessProfile(BaseModel):
         description="Preferencias del cliente (ej: frecuencia de insights, áreas de enfoque)"
     )
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-
-    @validator('data_maturity')
+    @field_validator('data_maturity')
+    @classmethod
     def validate_data_maturity(cls, v):
         """Valida que data_maturity sea un valor permitido"""
         allowed = ['low', 'medium', 'high']
@@ -232,50 +275,55 @@ class BusinessProfile(BaseModel):
             raise ValueError(f"data_maturity debe ser uno de: {allowed}")
         return v
 
-    @validator('profile_completeness', 'confidence_score')
-    def validate_scores(cls, v, field):
+    @field_validator('profile_completeness', 'confidence_score')
+    @classmethod
+    def validate_scores(cls, v):
         """Valida que los scores estén entre 0 y 1"""
         if not 0.0 <= v <= 1.0:
-            raise ValueError(f"{field.name} debe estar entre 0.0 y 1.0")
+            raise ValueError(f"Score debe estar entre 0.0 y 1.0")
         return v
 
-    @root_validator
-    def update_last_updated(cls, values):
+    @model_validator(mode='after')
+    def update_last_updated(self):
         """Actualiza last_updated al modificar el perfil"""
-        if 'last_updated' not in values or values.get('last_updated') is None:
-            values['last_updated'] = datetime.now()
-        return values
+        if self.last_updated is None:
+            self.last_updated = datetime.now()
+        return self
 
     def calculate_completeness(self) -> float:
         """
         Calcula el score de completitud del perfil basado en campos poblados.
 
         Pesos:
-        - Identidad y contexto básico: 20%
-        - Contexto estratégico (prioridades, pain points): 40%
+        - Identidad y contexto básico: 15%
+        - Contexto estratégico (prioridades, pain points, orthodoxies): 45%
         - Métricas y KPIs: 25%
         - Sistemas y datos: 15%
+
+        NOTA: Los orthodoxies son CRÍTICOS para generar hipótesis de alta calidad.
         """
         score = 0.0
 
-        # Identidad y contexto básico (20%)
+        # Identidad y contexto básico (15%)
         basic_fields = [
             self.company_name,
             self.industry,
             self.business_model,
             self.revenue_model
         ]
-        score += 0.20 * (sum(1 for f in basic_fields if f) / len(basic_fields))
+        score += 0.15 * (sum(1 for f in basic_fields if f) / len(basic_fields))
 
-        # Contexto estratégico (40%)
+        # Contexto estratégico (45% - AUMENTADO por importancia de orthodoxies)
         strategic_score = 0.0
         if self.strategic_priorities:
             strategic_score += 0.15
         if self.known_pain_points:
             strategic_score += 0.15
         if self.north_star_metric:
+            strategic_score += 0.05
+        if self.industry_orthodoxies:  # NUEVO - crítico para Unknown Unknowns
             strategic_score += 0.10
-        score += min(strategic_score, 0.40)
+        score += min(strategic_score, 0.45)
 
         # Métricas y KPIs (25%)
         if self.kpis:
@@ -315,6 +363,23 @@ class BusinessProfile(BaseModel):
         """Retorna KPIs que tienen target definido"""
         return [kpi for kpi in self.kpis if kpi.target is not None]
 
+    def add_orthodoxy(self, orthodoxy: Orthodoxy):
+        """Agrega un ortodoxo detectado"""
+        # Evitar duplicados (por texto similar)
+        for existing in self.industry_orthodoxies:
+            if existing.orthodoxy.lower() == orthodoxy.orthodoxy.lower():
+                return  # Ya existe
+
+        self.industry_orthodoxies.append(orthodoxy)
+        self.last_updated = datetime.now()
+
+    def get_high_disruption_orthodoxies(self) -> List[Orthodoxy]:
+        """Retorna ortodoxos con alto potencial de disrupción"""
+        return [
+            o for o in self.industry_orthodoxies
+            if o.potential_for_disruption == "high" and o.confidence >= 0.7
+        ]
+
     def to_context_string(self) -> str:
         """
         Genera un string de contexto para usar en prompts del LLM.
@@ -351,6 +416,13 @@ class BusinessProfile(BaseModel):
                     if kpi.unit:
                         kpi_str += f" {kpi.unit}"
                 context_parts.append(kpi_str)
+
+        if self.industry_orthodoxies:
+            context_parts.append("")
+            context_parts.append("Ortodoxos detectados (creencias no cuestionadas):")
+            for orthodoxy in self.industry_orthodoxies[:5]:
+                context_parts.append(f"  - {orthodoxy.orthodoxy}")
+                context_parts.append(f"    Potencial de disrupción: {orthodoxy.potential_for_disruption}")
 
         return "\n".join(context_parts)
 
@@ -399,6 +471,7 @@ class BusinessProfileUpdate(BaseModel):
     active_initiatives: Optional[List[Initiative]] = None
     north_star_metric: Optional[str] = None
     kpis: Optional[List[KPI]] = None
+    industry_orthodoxies: Optional[List[Orthodoxy]] = None  # NUEVO
     industry_benchmarks: Optional[Dict[str, Any]] = None
     regulatory_constraints: Optional[List[str]] = None
     competitive_context: Optional[str] = None

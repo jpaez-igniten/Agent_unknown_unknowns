@@ -1,0 +1,56 @@
+[2026-01-30 11:28:21] DEBUG    - asyncio - Using selector: KqueueSelector
+[2026-01-30 11:28:21] INFO     - __main__ - Inicializando componentes...
+[2026-01-30 11:28:21] INFO     - __main__ - ✅ LLM inicializado (gemini-3-flash-preview)
+[2026-01-30 11:28:21] INFO     - __main__ - Conectando a Postgres: localhost:5432/igniten_core
+[2026-01-30 11:28:21] INFO     - __main__ - ✅ Conectado a Postgres exitosamente
+[2026-01-30 11:28:21] INFO     - __main__ - Inicializando repositories y componentes...
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.business_context.profile_builder - OrthodoxyDetector initialized
+[2026-01-30 11:28:21] INFO     - __main__ - ✅ Todos los componentes inicializados
+[2026-01-30 11:28:21] INFO     - __main__ - Cargando perfil para cliente: demo_seguros_001
+[2026-01-30 11:28:21] INFO     - __main__ - Perfil cargado: Seguros Carga S.A.
+[2026-01-30 11:28:21] INFO     - __main__ - Iniciando pipeline completo de generación y validación...
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.orchestrator - Starting discovery pipeline for client demo_seguros_001
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_112821_fd2c99c2] STEP 1: Loading BusinessProfile
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_112821_fd2c99c2] Profile loaded: Seguros Carga S.A., completeness=90.00%
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_112821_fd2c99c2] STEP 2: Generating hypotheses (max: 10)
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating hypotheses for client demo_seguros_001 (run: run_20260130_112821_fd2c99c2)
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating knowledge-driven hypotheses (max: 5)
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generating anomaly-driven hypotheses (max: 3)
+[2026-01-30 11:28:21] INFO     - google_genai.models - AFC is enabled with max remote calls: 10.
+[2026-01-30 11:28:21] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.generator - Detecting anomalies for client demo_seguros_001
+[2026-01-30 11:28:21] DEBUG    - httpcore.connection - connect_tcp.started host='generativelanguage.googleapis.com' port=443 local_address=None timeout=None socket_options=None
+[2026-01-30 11:28:21] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.generator - Detected 0 anomalies
+[2026-01-30 11:28:21] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - No anomalies detected, skipping anomaly-driven generation
+[2026-01-30 11:28:21] DEBUG    - httpcore.connection - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x113dfc050>
+[2026-01-30 11:28:21] DEBUG    - httpcore.connection - start_tls.started ssl_context=<ssl.SSLContext object at 0x111bc7020> server_hostname='generativelanguage.googleapis.com' timeout=None
+[2026-01-30 11:28:21] DEBUG    - httpcore.connection - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x113fcb890>
+[2026-01-30 11:28:21] DEBUG    - httpcore.http11 - send_request_headers.started request=<Request [b'POST']>
+[2026-01-30 11:28:21] DEBUG    - httpcore.http11 - send_request_headers.complete
+[2026-01-30 11:28:21] DEBUG    - httpcore.http11 - send_request_body.started request=<Request [b'POST']>
+[2026-01-30 11:28:21] DEBUG    - httpcore.http11 - send_request_body.complete
+[2026-01-30 11:28:21] DEBUG    - httpcore.http11 - receive_response_headers.started request=<Request [b'POST']>
+[2026-01-30 11:28:44] DEBUG    - httpcore.http11 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=UTF-8'), (b'Vary', b'Origin'), (b'Vary', b'X-Origin'), (b'Vary', b'Referer'), (b'Content-Encoding', b'gzip'), (b'Date', b'Fri, 30 Jan 2026 16:28:44 GMT'), (b'Server', b'scaffolding on HTTPServer2'), (b'X-XSS-Protection', b'0'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-Content-Type-Options', b'nosniff'), (b'Server-Timing', b'gfet4t7; dur=22934'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'), (b'Transfer-Encoding', b'chunked')])
+[2026-01-30 11:28:44] DEBUG    - httpcore.http11 - receive_response_body.started request=<Request [b'POST']>
+[2026-01-30 11:28:44] DEBUG    - httpcore.http11 - receive_response_body.complete
+[2026-01-30 11:28:44] DEBUG    - httpcore.http11 - response_closed.started
+[2026-01-30 11:28:44] DEBUG    - httpcore.http11 - response_closed.complete
+[2026-01-30 11:28:44] ERROR    - packages.core.domain.unknown_unknowns.hypothesis.generator - Failed to parse LLM response: Expecting value: line 1 column 1 (char 0)
+[2026-01-30 11:28:44] DEBUG    - packages.core.domain.unknown_unknowns.hypothesis.generator - LLM response was: ```json
+[
+  {
+    "hypothesis_text": "Los clientes con descuentos otorgados por agentes superiores al 15% presentan un margen neto 60% inferior al promedio, ya que el volumen adicional no compensa la erosión del margen y el costo de servicio asociado.",
+    "hypothesis_type": "knowledge_driven",
+    "category": "profitability",
+    "generated_from": "pain_point",
+    "actionability": {
+      "if_true_then": "Implementar una política de 'Hard Cap' de descuentos al 10% para nuevos contratos y requ
+[2026-01-30 11:28:44] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Generated 0 raw hypotheses
+[2026-01-30 11:28:44] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Calculating delivery scores for 0 hypotheses
+[2026-01-30 11:28:44] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Filtered to 0 deliverable hypotheses (score >=70)
+[2026-01-30 11:28:44] INFO     - packages.core.domain.unknown_unknowns.hypothesis.generator - Final portfolio: 0 hypotheses (quick_win: 0, medium_term: 0, strategic_bet: 0)
+[2026-01-30 11:28:44] INFO     - packages.core.domain.unknown_unknowns.orchestrator - [run_20260130_112821_fd2c99c2] Generated 0 hypotheses
+[2026-01-30 11:28:44] WARNING  - packages.core.domain.unknown_unknowns.orchestrator - No hypotheses generated for demo_seguros_001
+[2026-01-30 11:28:44] INFO     - __main__ - Resultados guardados en: results/run_20260130_112844_demo_seguros_001.json
+[2026-01-30 11:28:44] INFO     - __main__ - Conexión a Postgres cerrada
+[2026-01-30 11:28:44] DEBUG    - httpcore.connection - close.started
+[2026-01-30 11:28:44] DEBUG    - httpcore.connection - close.complete

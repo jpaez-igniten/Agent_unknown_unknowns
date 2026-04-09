@@ -29,7 +29,8 @@ from packages.core.domain.unknown_unknowns.business_context.profile_schema impor
     BusinessProfile,
     StrategicPriority,
     KPI,
-    SizeMetrics
+    SizeMetrics,
+    Orthodoxy
 )
 from packages.core.domain.unknown_unknowns.business_context.profile_repository import (
     BusinessProfileRepository
@@ -37,6 +38,14 @@ from packages.core.domain.unknown_unknowns.business_context.profile_repository i
 from packages.core.domain.unknown_unknowns.business_context.profile_builder import (
     BusinessProfileBuilder
 )
+
+# Intentar importar LLM (opcional para tests)
+try:
+    from packages.core.utils.gemini_wrapper import GeminiLLMWrapper
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    print("⚠️  Google GenAI no disponible. Ortodoxias no serán detectadas.")
 
 
 # ============================================================================
@@ -240,14 +249,38 @@ async def create_db_pool(settings):
         print("  1. Postgres esté corriendo")
         print("  2. Las credenciales en .env sean correctas")
         print("  3. La base de datos exista")
-        print("  4. La migración 012_unknown_unknowns.sql haya sido ejecutada")
+        print("  4. La migración 012_unknown_unknowns_v2.sql haya sido ejecutada")
         raise
+
+
+def initialize_llm(settings):
+    """Inicializa LLM si está disponible y configurado"""
+    if not LLM_AVAILABLE:
+        print("⚠️  LLM no disponible (langchain-google-genai no instalado)")
+        return None
+
+    if not settings.google_api_key:
+        print("⚠️  GOOGLE_API_KEY no configurado en .env")
+        print("   Ortodoxias NO serán detectadas")
+        return None
+
+    try:
+        llm = GeminiLLMWrapper(
+            model=settings.gemini_model,
+            api_key=settings.google_api_key,
+            temperature=0.1
+        )
+        print(f"✅ LLM inicializado ({settings.gemini_model})")
+        return llm
+    except Exception as e:
+        print(f"⚠️  Error inicializando LLM: {e}")
+        return None
 
 
 async def test_create_profile(builder: BusinessProfileBuilder, client_id: str):
     """Test: Crear perfil desde onboarding"""
     print(f"\n{'='*70}")
-    print("TEST 1: Crear perfil desde datos de onboarding")
+    print("TEST 1: Crear perfil desde datos de onboarding + ortodoxias")
     print(f"{'='*70}")
 
     try:
@@ -262,6 +295,23 @@ async def test_create_profile(builder: BusinessProfileBuilder, client_id: str):
         print(f"   Industria: {profile.industry}")
         print(f"   Completeness: {profile.profile_completeness:.2%}")
         print(f"   Confidence: {profile.confidence_score:.2%}")
+
+        # Mostrar ortodoxias detectadas
+        if profile.industry_orthodoxies:
+            print(f"\n🔍 Ortodoxias detectadas: {len(profile.industry_orthodoxies)}")
+            high_disruption = profile.get_high_disruption_orthodoxies()
+            if high_disruption:
+                print(f"   - Alto potencial de disrupción: {len(high_disruption)}")
+
+            for i, orth in enumerate(profile.industry_orthodoxies[:3], 1):  # Mostrar primeras 3
+                print(f"\n   {i}. {orth.orthodoxy}")
+                print(f"      Discovered by: {orth.discovered_by}")
+                print(f"      Confidence: {orth.confidence:.2f}")
+                print(f"      Disruption potential: {orth.potential_for_disruption}")
+                if orth.quote:
+                    print(f"      Quote: \"{orth.quote}\"")
+        else:
+            print(f"\n   ℹ️  No se detectaron ortodoxias (LLM no disponible o sin datos)")
 
         return profile
 
@@ -383,10 +433,77 @@ async def test_stats(repository: BusinessProfileRepository):
         raise
 
 
+async def test_orthodoxy_detection(builder: BusinessProfileBuilder, client_id: str):
+    """Test: Verificar detección de ortodoxias"""
+    print(f"\n{'='*70}")
+    print("TEST 6: Verificar detección de ortodoxias")
+    print(f"{'='*70}")
+
+    try:
+        profile = await builder.repository.get_profile(client_id)
+
+        if not profile:
+            print(f"\n❌ Perfil no encontrado: {client_id}")
+            return None
+
+        if not builder.orthodoxy_detector:
+            print(f"\n⚠️  OrthodoxyDetector no disponible (LLM no configurado)")
+            print("   Este componente es CRÍTICO para detectar creencias no cuestionadas")
+            print("   Configura GOOGLE_API_KEY en .env para habilitarlo")
+            return None
+
+        print(f"\n📊 Análisis de ortodoxias para: {profile.company_name}")
+        print(f"   Total ortodoxias detectadas: {len(profile.industry_orthodoxies)}")
+
+        if profile.industry_orthodoxies:
+            # Estadísticas
+            by_method = {}
+            by_disruption = {}
+
+            for orth in profile.industry_orthodoxies:
+                by_method[orth.discovered_by] = by_method.get(orth.discovered_by, 0) + 1
+                by_disruption[orth.potential_for_disruption] = by_disruption.get(orth.potential_for_disruption, 0) + 1
+
+            print(f"\n   Por método de detección:")
+            for method, count in by_method.items():
+                print(f"      - {method}: {count}")
+
+            print(f"\n   Por potencial de disrupción:")
+            for disruption, count in by_disruption.items():
+                print(f"      - {disruption}: {count}")
+
+            # Mostrar ortodoxias de alto impacto
+            high_disruption = profile.get_high_disruption_orthodoxies()
+            if high_disruption:
+                print(f"\n   🔥 Ortodoxias de ALTO impacto ({len(high_disruption)}):")
+                for i, orth in enumerate(high_disruption[:5], 1):
+                    print(f"\n      {i}. {orth.orthodoxy}")
+                    print(f"         Confidence: {orth.confidence:.2f}")
+                    print(f"         Evidence: {orth.evidence[:100]}...")
+                    if orth.quote:
+                        print(f"         Quote: \"{orth.quote[:80]}...\"")
+
+            print(f"\n✅ Detección de ortodoxias completada")
+        else:
+            print(f"\n   ℹ️  No se detectaron ortodoxias")
+            print(f"   Posibles razones:")
+            print(f"      - No hay datos históricos suficientes")
+            print(f"      - No hay conversaciones previas")
+            print(f"      - El perfil es muy nuevo")
+
+        return profile.industry_orthodoxies
+
+    except Exception as e:
+        print(f"\n❌ Error en detección de ortodoxias: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
 async def test_template_generation(builder: BusinessProfileBuilder):
     """Test: Generar template de onboarding"""
     print(f"\n{'='*70}")
-    print("TEST 6: Generar template de onboarding")
+    print("TEST 7: Generar template de onboarding")
     print(f"{'='*70}")
 
     try:
@@ -410,7 +527,7 @@ async def main():
     """Ejecuta suite completa de tests para FASE 1"""
 
     print(f"\n{'#'*70}")
-    print("# UNKNOWN UNKNOWNS AGENT - TEST SUITE FASE 1")
+    print("# UNKNOWN UNKNOWNS AGENT - TEST SUITE FASE 1 (UPDATED)")
     print(f"{'#'*70}\n")
 
     settings = get_settings()
@@ -420,6 +537,9 @@ async def main():
         # Crear DB pool
         pool = await create_db_pool(settings)
 
+        # Inicializar LLM (opcional)
+        llm = initialize_llm(settings)
+
         # Inicializar repository y builder
         repository = BusinessProfileRepository(
             db_pool=pool,
@@ -427,28 +547,51 @@ async def main():
             embedding_function=None
         )
 
-        builder = BusinessProfileBuilder(repository)
+        # Crear una conexión directa para OrthodoxyDetector
+        # (el detector necesita una conexión, no un pool)
+        db_connection = await pool.acquire()
 
-        client_id = "demo_seguros_001"
+        try:
+            # Inicializar builder con LLM y db connection para ortodoxias
+            builder = BusinessProfileBuilder(
+                repository=repository,
+                db_connection=db_connection if llm else None,
+                llm=llm
+            )
 
-        # Ejecutar tests
-        await test_create_profile(builder, client_id)
-        await test_retrieve_profile(repository, client_id)
-        await test_profile_quality(builder, client_id)
-        await test_list_profiles(repository)
-        await test_stats(repository)
-        # await test_template_generation(builder)  # Opcional
+            client_id = "demo_seguros_001"
 
-        print(f"\n{'#'*70}")
-        print("# ✅ TODOS LOS TESTS COMPLETADOS EXITOSAMENTE")
-        print(f"{'#'*70}\n")
+            # Ejecutar tests
+            await test_create_profile(builder, client_id)
+            await test_retrieve_profile(repository, client_id)
+            await test_profile_quality(builder, client_id)
+            await test_list_profiles(repository)
+            await test_stats(repository)
+            await test_orthodoxy_detection(builder, client_id)  # NEW: Test ortodoxias
+            # await test_template_generation(builder)  # Opcional
 
-        print("📝 SIGUIENTE PASO:")
-        print("   El perfil está creado y listo para FASE 2:")
-        print("   - Generación de hipótesis")
-        print("   - Validación con SQL")
-        print("   - Análisis de insights")
-        print("")
+            print(f"\n{'#'*70}")
+            print("# ✅ TODOS LOS TESTS COMPLETADOS EXITOSAMENTE")
+            print(f"{'#'*70}\n")
+
+            print("📝 SIGUIENTE PASO:")
+            print("   El perfil está creado y listo para FASE 2:")
+            print("   - Generación de hipótesis con actionability")
+            print("   - Validación técnica y análisis")
+            print("   - Delivery scoring y human review")
+            print("   - Hypothesis graveyard tracking")
+            print("")
+
+            if not llm:
+                print("💡 TIP:")
+                print("   Para habilitar detección de ortodoxias:")
+                print("   1. pip install langchain-google-genai")
+                print("   2. Agregar GOOGLE_API_KEY a .env")
+                print("")
+
+        finally:
+            # Liberar conexión
+            await pool.release(db_connection)
 
     except Exception as e:
         print(f"\n{'#'*70}")

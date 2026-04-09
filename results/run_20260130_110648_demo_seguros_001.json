@@ -1,0 +1,19 @@
+{
+  "run_id": "run_20260130_110624_41a2ff1d",
+  "client_id": "demo_seguros_001",
+  "company_name": "Seguros Carga S.A.",
+  "total_hypotheses_generated": 5,
+  "feasible_hypotheses": 0,
+  "validated_hypotheses": 0,
+  "deliverable_insights": 0,
+  "duration_seconds": 23.819085,
+  "started_at": "2026-01-30T11:06:24.742817",
+  "completed_at": "2026-01-30T11:06:48.561902",
+  "insights": [],
+  "run_metadata": {
+    "profile_completeness": 0.9,
+    "strategic_priorities_count": 3,
+    "orthodoxies_detected": 0,
+    "kpis_count": 4
+  }
+}
